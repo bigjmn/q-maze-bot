@@ -5,7 +5,7 @@ $('.panelpart').on('click', function(){
   partimage = this.innerHTML
 
 })
-//Drawing the maze
+//Maze-making interface
 
 for (i=0;i<10;i++){
   var newrow = document.createElement('div')
@@ -81,29 +81,8 @@ function move(square, direction){
 
   }
 }
-function getdir(current, target){
-
-  let xdiff = target[0]-current[0]
-  let ydiff = target[1]-current[1]
-
-  if (xdiff == 0){
-    if (ydiff == 1){
-      return 'd'
-    }
-    return 'u'
-  }
-  if (xdiff == 1){
-    return 'r'
-  }
-  if (xdiff == -1){
-    return 'l'
-  }
-  return 'help'
 
 
-
-
-}
 //update the colors of the squares according to the bot's valuation
 //the numbers get pretty big fast, which isn't a problem for
 //the AI but it is for us. This normalizes the relative values
@@ -118,12 +97,14 @@ function updatecolors(stepnum,keystat){
       }
       z = fullboard[i][j]
 
+      //this scaling factor seems to work okay. Might fiddle with it later
       var shade = 255*(1+z.val[keystat]/stepnum**.8).toString()
       z.jquerid.css('background','rgb(255,'+shade+','+shade+')')
     }
   }
 }
 
+//constructor for maze components
 function square(coord){
   this.x = coord[0]
   this.y = coord[1]
@@ -131,18 +112,15 @@ function square(coord){
   this.pos = coord
   this.jquerid = $('#d'+this.y.toString()+this.x.toString())
 
-
-
+//valuations given different states. only states the AI knows
+// are: has it picked up a key?
   this.val = [0,0];
 
 
-
+//type of component. Empty space, key, gate, start, finish, wall
   this.stat = 'space';
 
-
-
-  this.end = false;
-
+//get list of neighbors.
   this.neighborlist = function(){
     var neighbors = []
     for (k=0;k<4;k++){
@@ -153,6 +131,7 @@ function square(coord){
 
 
       let b = fullboard[testsquare[0]][testsquare[1]]
+      //gate changes to 'ungate' when key is picked up.
         if (b.stat=='wall' || b.stat == 'gate'){
         continue;
       }
@@ -161,8 +140,11 @@ function square(coord){
     return neighbors
 
   }
-
+//evaluate neighbors to find the most desirable square given
+//the keystat (has the AI picked up a key)
   this.bestneighbor = function(keystat){
+
+    //get the best neighboring value
     var bestval = this.neighborlist()[0].val[keystat]
     let lam = this.neighborlist().length;
     for (i=0;i<lam;i++){
@@ -170,13 +152,20 @@ function square(coord){
         bestval = this.neighborlist()[i].val[keystat]
       }
     }
+
+    //randomly choose a neighbor with that value in case of tie
+    //there will be a lot of ties, especially early on
     let topchoices = this.neighborlist().filter(x => x.val[keystat] == bestval)
     var finalchoice = topchoices[Math.floor(Math.random()*topchoices.length)]
     return finalchoice
   }
 
 
+  //update the value of the square the bot is leaving by
+  //averaging it with it's neighbors, subtracting one.
 
+  //trying to get values to reflect 'expected number of
+  //steps until finish'
   this.updateval = function(keystat){
     var neighborvals = 0
 
@@ -190,6 +179,8 @@ function square(coord){
     return newval - 1
   }
 }
+
+//create the maze the user built
 function makeboard(){
   for (i=0;i<10;i++){
     for (j=0;j<10;j++){
@@ -213,7 +204,7 @@ function makeboard(){
 
 }
 
-//store the start position
+//store the start position, key and gate spot for referencing convencience
 var starter;
 var keyspot;
 var gatespot;
@@ -223,113 +214,106 @@ var gatespot;
 
 var robot = {
 
+//position, in the form of a maze component.
   pos: starter,
+
+//total of steps taken since first run. NOT reset each run.
 
   stepper:0,
 
+//path taken during the run. AI remembers path since begining of run,
+//but not previous runs.
   path: [],
 
+//does the AI have the key?
   haskey:0,
 
-  //starts run, resets maze but not values
+  //starts run, resets maze (but not values/stepper)
   startrun: function(){
     this.pos = starter
     this.path = []
     this.haskey = 0;
+
+    //if there is a gate, lock it again
     if (gatespot){
       gatespot.stat = 'gate'
       gatespot.jquerid.html('🔒')
     }
+
+    //if there is a key, place it again
     if (keyspot){
       keyspot.stat = 'key'
       keyspot.innerHTML = '🗝️'
     }
 
+    //put the bot back at the starting pos, initiate greed loop
     $('#mazebot').animate({left:50*starter.pos[0].toString()+'px',top:50*starter.pos[1].toString()+'px'},10,robot.greedyrun())
 
   },
 
+ //main recursive function.
+ //so called because it acts 'greedily', making the move with the best valuation
+ //exploration is encouraged by the fact that unexplored squares have
+ //valuation 0, which is a maximum.
+
   greedyrun: function(){
 
-
+//if the bot is at the end, start the next run
     if (this.pos.stat == 'end'){
       this.startrun()
 
-
-
       return;
     }
+
+//if the bot is on the key, pick it up. Unlock the gate.
     if (this.pos.stat == 'key'){
       this.haskey = 1;
       this.pos.stat = 'unkey'
       this.pos.innerHTML = ''
       if (gatespot){
+        //neighbor list filters out maze parts w status 'gate',
+        //so any change of status name puts it in play
         gatespot.stat = 'ungate'
         gatespot.jquerid.html('')
       }
     }
+
+    //commit to next square. best valuation given key status
     var nextsquare = this.pos.bestneighbor(this.haskey)
     let xcor = nextsquare.pos[0]
     let ycor = nextsquare.pos[1]
 
     this.stepper+=1
 
-
-
-
+    //add current square to path. punish visited squares.
+    //this punishment is pretty harsh, but 'good' squares can recover
+    //pretty easily via the individual valuation. no room to explain here.
     this.path.push(this.pos)
     for (i=0;i<this.path.length;i++){
       this.path[i].val[this.haskey] -= 1/Math.log(this.stepper+3)
 
 
     }
+    //update valuation of  square
     this.pos.val[this.haskey] = this.pos.updateval(this.haskey)
+
+    //update the colors
     updatecolors(this.stepper,this.haskey)
+
+    //officially move to the next square
     this.pos = nextsquare
 
-
+    //actually animate the bot to the next square. function recurses.
     $('#mazebot').animate({left:50*xcor.toString()+'px',top:50*ycor.toString()+'px'},200,function(){
       robot.greedyrun()
     })
   }
 
-  // currpath: [],
-  //
-  // greedymove: function(){
-  //   this.pos.val = this.pos.updateval()
-  //   movebot(this.pos.pos)
-  //   console.log(this.pos.pos)
-  //
-  //
-  //   this.currpath.push(getdir(this.pos.pos,this.pos.bestneighbor().pos))
-  //   this.pos = this.pos.bestneighbor()
-  // },
-  //
-  // mazerun: function(){
-  //   this.pos = fullboard[0][0]
-  //   step = 0
-  //   while (this.pos.end == false){
-  //     this.greedymove();
-  //
-  //
-  //     step++
-  //
-  //   }
-  //   console.log(step)
-  //   console.log(this.currpath)
-  //   this.currpath = []
-  //   console.log('done')
-  //
-  // }
 }
 
 
 
-
-
-
-
-
+//add listener to start button to trigger this whole thing.
 $('#startbutton').on('click', function(){
 
   makeboard()
@@ -338,19 +322,3 @@ $('#startbutton').on('click', function(){
   robot.startrun()
 
 })
-
-
-// for (i=0;i<10;i++){
-//   var boardrow = document.createElement('div');
-//   boardrow.className = 'row';
-//   boardrow.id = 'row'+i.toString();
-//
-//   for (j=0;j<10;j++){
-//     var newsquare = document.createElement('input');
-//
-// // I'm using buttons because they have a built
-// //in focusing feature.
-//     newsquare.type='button';
-//   }
-//
-// }
