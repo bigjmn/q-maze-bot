@@ -1,6 +1,8 @@
 var partsetter = 'space'
 var partimage = ''
 $('.panelpart').on('click', function(){
+  $('.panelpart').css('border-color','black');
+  $(this).css('border-color','blue');
   partsetter = this.id
   partimage = this.innerHTML
 
@@ -88,6 +90,10 @@ function move(square, direction){
 //the AI but it is for us. This normalizes the relative values
 //so we can convert them into a shade of red (darker shade means AI likes
 //it less)
+
+//trying a new thing. tracking worst val, using that as benchmark for solid red.
+var worstval = [0,0]
+
 function updatecolors(stepnum,keystat){
   for (i=0;i<fullboard.length;i++){
     for (j=0;j<fullboard[i].length;j++){
@@ -98,7 +104,7 @@ function updatecolors(stepnum,keystat){
       z = fullboard[i][j]
 
       //this scaling factor seems to work okay. Might fiddle with it later
-      var shade = 255*(1+z.val[keystat]/stepnum**.8).toString()
+      var shade = 255*(1-z.val[keystat]/worstval[keystat]).toString()
       z.jquerid.css('background','rgb(255,'+shade+','+shade+')')
     }
   }
@@ -291,11 +297,17 @@ var robot = {
     this.path.push(this.pos)
     for (i=0;i<this.path.length;i++){
       this.path[i].val[this.haskey] -= 1/Math.log(this.stepper+3)
+      if (this.path[i].val[this.haskey] < worstval[this.haskey]){
+        worstval[this.haskey] = this.path[i].val[this.haskey];
+      }
 
 
     }
     //update valuation of  square
     this.pos.val[this.haskey] = this.pos.updateval(this.haskey)
+    if (this.pos.val[this.haskey] < worstval[this.haskey]){
+      worstval[this.haskey] = this.pos.val[this.haskey]
+    }
 
     //update the colors
     updatecolors(this.stepper,this.haskey)
@@ -315,6 +327,8 @@ var robot = {
 
 //add listener to start button to trigger this whole thing.
 $('#startbutton').on('click', function(){
+
+  $('#mazebot').show();
 
   makeboard()
 
