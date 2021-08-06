@@ -46,10 +46,11 @@
 }
 #progresstracker{
   position: absolute;
-  width: 100px;
+  
   height: 400px;
   left: 800px;
   border-style: solid;
+  overflow-y:auto;
 }
 #controlpanel{
   position: absolute;

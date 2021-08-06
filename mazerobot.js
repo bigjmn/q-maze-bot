@@ -215,7 +215,9 @@ function square(coord){
 
 
   //update the value of the square the bot is leaving by
-  //averaging it with it's neighbors, subtracting one.
+  //averaging it with it's neighbors.
+
+  
 
   //trying to get values to reflect 'expected number of
   //steps until finish'
@@ -229,7 +231,7 @@ function square(coord){
 
     }
     let newval = neighborvals/lamda.length;
-    return newval 
+    return newval
   }
 }
 
@@ -329,6 +331,7 @@ var robot = {
       document.getElementById('progresstracker').innerHTML+=
       '<p>'+this.trialnum.toString()+' : '+this.path.length.toString()
       +'</p><br>'
+      $("#progresstracker").stop().animate({ scrollTop: $("#progresstracker")[0].scrollHeight}, 1000);
       this.startrun()
 
       return;
