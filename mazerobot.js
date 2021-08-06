@@ -1,4 +1,5 @@
-
+var msize = 15;
+var fullboard = []
 var flag=false;
 var runmode = false;
 var partsetter = 'space'
@@ -14,17 +15,21 @@ $('.panelpart').on('click', function(){
 
 })
 //Maze-making interface
+function makebuttons(){
 
-for (i=0;i<10;i++){
+
+
+for (i=0;i<msize;i++){
   var newrow = document.createElement('div')
   newrow.className = 'row';
   newrow.id = 'row-'+i.toString()
 
-  for (j=0;j<10;j++){
+  for (j=0;j<msize;j++){
     var newbut = document.createElement('button')
     newbut.value = 'space';
+
     newbut.className = 'mazepart'
-    newbut.id = 'd'+i.toString()+j.toString()
+    newbut.id = 'r'+i.toString()+'c'+j.toString()
 
     newbut.addEventListener('mousedown', function(){
       if (runmode){
@@ -75,22 +80,29 @@ for (i=0;i<10;i++){
   }
   document.getElementById('gamezone').appendChild(newrow)
 }
+$('.mazepart').css('width',(600/msize).toString()+'px')
+$('.mazepart').css('height',(600/msize).toString()+'px')
+$('#botpic').css('width',(600/msize).toString()+'px')
+$('#botpic').css('height',(600/msize).toString()+'px')
+
+
 //create an array of zeroes as placeholders before the maze is set.
 //this will make indexing easier.
-var fullboard = []
-for (i=0;i<10;i++){
+
+for (i=0;i<msize;i++){
   var boardrow = []
-  for (j=0;j<10;j++){
+  for (j=0;j<msize;j++){
     boardrow.push(0)
   }
   fullboard.push(boardrow)
 
 }
+}
 //function to determine if a square is within the range
 function inrange(x){
   let xcor = x[0]
   let ycor = x[1]
-  if (xcor <0 || ycor < 0 || xcor >= 10 || ycor >= 10){
+  if (xcor <0 || ycor < 0 || xcor >= msize || ycor >= msize){
     return false;
   }
   return true;
@@ -115,6 +127,8 @@ function move(square, direction){
 
   }
 }
+
+makebuttons()
 
 
 //update the colors of the squares according to the bot's valuation
@@ -148,7 +162,7 @@ function square(coord){
   this.y = coord[1]
 
   this.pos = coord
-  this.jquerid = $('#d'+this.y.toString()+this.x.toString())
+  this.jquerid = $('#r'+this.y.toString()+'c'+this.x.toString())
 
 //valuations given different states. only states the AI knows
 // are: has it picked up a key?
@@ -220,8 +234,8 @@ function square(coord){
 
 //create the maze the user built
 function makeboard(){
-  for (i=0;i<10;i++){
-    for (j=0;j<10;j++){
+  for (i=0;i<msize;i++){
+    for (j=0;j<msize;j++){
       var z = new square([i,j])
       z.stat = z.jquerid.val()
       if (z.stat == 'key'){
@@ -289,7 +303,7 @@ var robot = {
     }
 
     //put the bot back at the starting pos, initiate greed loop
-    $('#mazebot').animate({left:50*starter.pos[0].toString()+'px',top:50*starter.pos[1].toString()+'px'},10,robot.greedyrun())
+    $('#mazebot').animate({left:(600/msize)*starter.pos[0].toString()+'px',top:(600/msize)*starter.pos[1].toString()+'px'},10,robot.greedyrun())
 
   },
 
@@ -357,7 +371,7 @@ var robot = {
     this.pos = nextsquare
 
     //actually animate the bot to the next square. function recurses.
-    $('#mazebot').animate({left:50*xcor.toString()+'px',top:50*ycor.toString()+'px'},this.speed,function(){
+    $('#mazebot').animate({left:(600/msize)*xcor.toString()+'px',top:(600/msize)*ycor.toString()+'px'},this.speed,function(){
       robot.greedyrun()
     })
   }
@@ -402,6 +416,7 @@ $('#stopbutton').on('click', function(){
 
   //clears the values
   makeboard();
+  worstval = [0,0]
 
 })
 
@@ -414,4 +429,11 @@ $('#clearbutton').on('click', function(){
   $('.mazepart').html('')
   $('.mazepart').css('background','white')
 
+})
+
+$('.sizeboy').on('click',function(){
+  $('#gamezone').html('')
+  msize = $(this).val()
+  fullboard = []
+  makebuttons();
 })

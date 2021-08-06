@@ -5,8 +5,8 @@
 
 .mazepart{
   float: left;
-  width: 50px;
-  height: 50px;
+  width: 25px;
+  height: 25px;
   background: white;
 }
 
@@ -28,16 +28,25 @@
 #wall{
   background-color: black;
 }
-
+#botpic{
+  height: 50px;
+  width: 50px;
+}
 #mazepanel{
   position: absolute;
   width:60px;
   top:100px;
-  left: 560px;
+  left: 620px;
+}
+#sizepanel{
+  position: absolute;
+  width:60px;
+  top:100px;
+  left: 720px;
 }
 #controlpanel{
   position: absolute;
-  top:540px;
+  top:620px;
   width: 320px;
   height: 120px;
   background-color: tan;
