@@ -1,5 +1,6 @@
 var msize = 15;
 var fullboard = []
+
 var flag=false;
 var runmode = false;
 var partsetter = 'space'
@@ -228,7 +229,7 @@ function square(coord){
 
     }
     let newval = neighborvals/lamda.length;
-    return newval - 1
+    return newval 
   }
 }
 
@@ -281,14 +282,18 @@ var robot = {
 //but not previous runs.
   path: [],
 
+  trialnum:0,
+
 //does the AI have the key?
   haskey:0,
 
   //starts run, resets maze (but not values/stepper)
   startrun: function(){
+    this.trialnum++
     this.pos = starter
     this.path = []
     this.haskey = 0;
+
 
     //if there is a gate, lock it again
     if (gatespot){
@@ -321,6 +326,9 @@ var robot = {
 
 //if the bot is at the end, start the next run
     if (this.pos.stat == 'end'){
+      document.getElementById('progresstracker').innerHTML+=
+      '<p>'+this.trialnum.toString()+' : '+this.path.length.toString()
+      +'</p><br>'
       this.startrun()
 
       return;
