@@ -1,6 +1,21 @@
 var msize = 15;
 var fullboard = []
 
+var key_string = '<img src="key.png" alt="" width="66%">'
+var gate_string = '<img src="gate.png" alt="" width="66%">'
+var opengate_string = '<img src="opengate.png" alt="" width="66%">'
+
+$('#key').html(key_string)
+
+
+
+
+
+$('#gate').html(gate_string)
+
+
+
+
 var flag=false;
 var runmode = false;
 var partsetter = 'space'
@@ -53,9 +68,10 @@ for (i=0;i<msize;i++){
       if (runmode){
         return;
       }
-      if (flag == false){
+      if (flag == false || partsetter == 'key' || partsetter == 'gate'){
         return;
       }
+
       this.value = partsetter
       this.innerHTML = partimage
 
@@ -63,9 +79,7 @@ for (i=0;i<msize;i++){
         $(this).css('background','black')
         return;
       }
-      if (this.value == 'gate'){
-        $(this).css('background','blue')
-      }
+
       $(this).css('background','white')
     })
     document.addEventListener('mouseup', function(){
@@ -301,13 +315,13 @@ var robot = {
     //if there is a gate, lock it again
     if (gatespot){
       gatespot.stat = 'gate'
-      gatespot.jquerid.html('🔒')
+      gatespot.jquerid.html(gate_string)
     }
 
     //if there is a key, place it again
     if (keyspot){
       keyspot.stat = 'key'
-      keyspot.innerHTML = '🗝️'
+      keyspot.jquerid.html(key_string)
     }
 
     //put the bot back at the starting pos, initiate greed loop
@@ -340,6 +354,7 @@ var robot = {
 
 //if the bot is on the key, pick it up. Unlock the gate.
     if (this.pos.stat == 'key'){
+      this.path = []
       this.haskey = 1;
       this.pos.stat = 'unkey'
       this.pos.innerHTML = ''
@@ -347,7 +362,7 @@ var robot = {
         //neighbor list filters out maze parts w status 'gate',
         //so any change of status name puts it in play
         gatespot.stat = 'ungate'
-        gatespot.jquerid.html('')
+        gatespot.jquerid.html(opengate_string)
       }
     }
 
@@ -363,6 +378,9 @@ var robot = {
     //pretty easily via the individual valuation. no room to explain here.
     this.path.push(this.pos)
     for (i=0;i<this.path.length;i++){
+
+      //
+
       this.path[i].val[this.haskey] -= 1/Math.log(this.stepper+3)
       if (this.path[i].val[this.haskey] < worstval[this.haskey]){
         worstval[this.haskey] = this.path[i].val[this.haskey];
@@ -447,7 +465,23 @@ $('#clearbutton').on('click', function(){
 
 })
 
+$('#wallfill').on('click', function(){
+  $('.mazepart').val('wall')
+
+
+
+
+  $('.mazepart').html('')
+  $('.mazepart').css('background','black')
+
+})
+
+
+
+
 $('.sizeboy').on('click',function(){
+  $('.sizeboy').css('border-style','none')
+  $(this).css('border-style','solid')
   $('#gamezone').html('')
   msize = $(this).val()
   fullboard = []
