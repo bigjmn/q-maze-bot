@@ -217,7 +217,7 @@ function square(coord){
   //update the value of the square the bot is leaving by
   //averaging it with it's neighbors.
 
-  
+
 
   //trying to get values to reflect 'expected number of
   //steps until finish'
@@ -427,6 +427,7 @@ $('#stopbutton').on('click', function(){
 
   //clears the values
   makeboard();
+  $('#progresstracker').html('')
   worstval = [0,0]
 
 })
