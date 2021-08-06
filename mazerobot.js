@@ -1,6 +1,12 @@
+
+var flag=false;
+var runmode = false;
 var partsetter = 'space'
 var partimage = ''
 $('.panelpart').on('click', function(){
+  if (runmode){
+    return;
+  }
   $('.panelpart').css('border-color','black');
   $(this).css('border-color','blue');
   partsetter = this.id
@@ -20,7 +26,11 @@ for (i=0;i<10;i++){
     newbut.className = 'mazepart'
     newbut.id = 'd'+i.toString()+j.toString()
 
-    newbut.addEventListener('click', function(){
+    newbut.addEventListener('mousedown', function(){
+      if (runmode){
+        return;
+      }
+      flag = true;
       this.value = partsetter
       this.innerHTML = partimage
 
@@ -32,6 +42,28 @@ for (i=0;i<10;i++){
         $(this).css('background','blue')
       }
       $(this).css('background','white')
+    })
+    newbut.addEventListener('mouseover', function(){
+      if (runmode){
+        return;
+      }
+      if (flag == false){
+        return;
+      }
+      this.value = partsetter
+      this.innerHTML = partimage
+
+      if (this.value == 'wall'){
+        $(this).css('background','black')
+        return;
+      }
+      if (this.value == 'gate'){
+        $(this).css('background','blue')
+      }
+      $(this).css('background','white')
+    })
+    document.addEventListener('mouseup', function(){
+      flag = false;
     })
 
 
@@ -220,6 +252,10 @@ var gatespot;
 
 var robot = {
 
+  paused: false,
+
+  speed: 1000,
+
 //position, in the form of a maze component.
   pos: starter,
 
@@ -263,6 +299,11 @@ var robot = {
  //valuation 0, which is a maximum.
 
   greedyrun: function(){
+
+    if (this.paused){
+      return;
+    }
+
 
 //if the bot is at the end, start the next run
     if (this.pos.stat == 'end'){
@@ -316,23 +357,61 @@ var robot = {
     this.pos = nextsquare
 
     //actually animate the bot to the next square. function recurses.
-    $('#mazebot').animate({left:50*xcor.toString()+'px',top:50*ycor.toString()+'px'},200,function(){
+    $('#mazebot').animate({left:50*xcor.toString()+'px',top:50*ycor.toString()+'px'},this.speed,function(){
       robot.greedyrun()
     })
   }
 
+
 }
 
+//set the speed
+$('#speedslider').on('input',function(){
+  var mysetting = $(this).val()
+  var milsecs = 1020-100*mysetting
+  robot.speed = milsecs
+})
 
 
 //add listener to start button to trigger this whole thing.
+
 $('#startbutton').on('click', function(){
+  if (!runmode){
+    runmode = true;
+  }
+  robot.paused = false;
 
   $('#mazebot').show();
 
   makeboard()
 
+  $('#clearbutton').prop('disabled',true)
+
 
   robot.startrun()
+
+})
+
+$('#stopbutton').on('click', function(){
+  runmode = false;
+  robot.paused = true;
+  $('#mazebot').hide();
+
+  $('#clearbutton').prop('disabled',false)
+
+
+  //clears the values
+  makeboard();
+
+})
+
+$('#clearbutton').on('click', function(){
+  $('.mazepart').val('space')
+
+
+
+
+  $('.mazepart').html('')
+  $('.mazepart').css('background','white')
 
 })

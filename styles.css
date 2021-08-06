@@ -31,10 +31,40 @@
 
 #mazepanel{
   position: absolute;
-  top:600px;
+  width:60px;
+  top:100px;
+  left: 560px;
+}
+#controlpanel{
+  position: absolute;
+  top:540px;
+  width: 320px;
+  height: 120px;
+  background-color: tan;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+
+
+}
+.controlbutton{
+  width: 100px;
+  height: 50px;
+}
+#speedbutton{
+
+}
+#speedslider{
+  width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#buttonzone{
+  margin-left: auto;
+  margin-right: auto;
 }
 .panelpart{
-  float: left;
+  float:left;
   width: 50px;
   height: 50px;
   background: white;
