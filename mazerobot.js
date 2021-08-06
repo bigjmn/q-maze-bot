@@ -217,10 +217,11 @@ function square(coord){
   //update the value of the square the bot is leaving by
   //averaging it with it's neighbors.
 
+  //NOT CURRENTLY BEING USED but may use for more complicated mazes
+  //especially if they have 'uncertain' moves (portals that take you
+  //to square A half the time, square B half the time, etc)
 
 
-  //trying to get values to reflect 'expected number of
-  //steps until finish'
   this.updateval = function(keystat){
     var neighborvals = 0
 
@@ -369,8 +370,10 @@ var robot = {
 
 
     }
-    //update valuation of  square
-    this.pos.val[this.haskey] = this.pos.updateval(this.haskey)
+
+    //update valuation of  square to 1 less than best neighbor
+    //(which is it's next square).
+    this.pos.val[this.haskey] = nextsquare.val[this.haskey]-1
     if (this.pos.val[this.haskey] < worstval[this.haskey]){
       worstval[this.haskey] = this.pos.val[this.haskey]
     }
@@ -428,6 +431,7 @@ $('#stopbutton').on('click', function(){
   //clears the values
   makeboard();
   $('#progresstracker').html('')
+  robot.trialnum = 0
   worstval = [0,0]
 
 })

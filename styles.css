@@ -41,8 +41,8 @@
 #sizepanel{
   position: absolute;
   width:60px;
-  top:100px;
-  left: 720px;
+  top:460px;
+  left: 620px;
 }
 #progresstracker{
   position: absolute;
@@ -87,4 +87,8 @@
   height: 50px;
   background: white;
   margin-left: 5px;
+}
+.sizeboy{
+  width: 100px;
+  height: 40px;
 }
