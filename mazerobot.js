@@ -354,6 +354,7 @@ var robot = {
       	{margin: { t: 0 } } );
 
         this.startrun()
+        return;
     }
 
 //if the bot is on the key, pick it up. Unlock the gate.
@@ -379,21 +380,7 @@ var robot = {
 
     this.runsteps++
 
-    //add current square to path. punish visited squares.
-    //this punishment is pretty harsh, but 'good' squares can recover
-    //pretty easily via the individual valuation. no room to explain here.
-    this.path.push(this.pos)
-    for (i=0;i<this.path.length;i++){
-
-      //
-
-      this.path[i].val[this.haskey] -= 1/Math.log(this.stepper+3)
-      if (this.path[i].val[this.haskey] < worstval[this.haskey]){
-        worstval[this.haskey] = this.path[i].val[this.haskey];
-      }
-
-
-    }
+  
 
     //update valuation of  square to 1 less than best neighbor
     //(which is it's next square).
