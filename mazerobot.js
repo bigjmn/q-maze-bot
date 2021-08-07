@@ -299,6 +299,10 @@ var robot = {
 //but not previous runs.
   path: [],
 
+  runsteps:0,
+
+  runhistory:[],
+
   trialnum:0,
 
 //does the AI have the key?
@@ -343,13 +347,13 @@ var robot = {
 
 //if the bot is at the end, start the next run
     if (this.pos.stat == 'end'){
-      document.getElementById('progresstracker').innerHTML+=
-      '<p>'+this.trialnum.toString()+' : '+this.path.length.toString()
-      +'</p><br>'
-      $("#progresstracker").stop().animate({ scrollTop: $("#progresstracker")[0].scrollHeight}, 1000);
-      this.startrun()
+      this.runhistory.push(this.runsteps)
+      this.runsteps = 0
+      let plotter = document.getElementById('progresstracker');
+      	Plotly.newPlot( plotter,[ {y:this.runhistory }],
+      	{margin: { t: 0 } } );
 
-      return;
+        this.startrun()
     }
 
 //if the bot is on the key, pick it up. Unlock the gate.
@@ -372,6 +376,8 @@ var robot = {
     let ycor = nextsquare.pos[1]
 
     this.stepper+=1
+
+    this.runsteps++
 
     //add current square to path. punish visited squares.
     //this punishment is pretty harsh, but 'good' squares can recover
@@ -487,3 +493,82 @@ $('.sizeboy').on('click',function(){
   fullboard = []
   makebuttons();
 })
+
+//function for converting a string to a maze.
+//good for saving/generating mazes quickly.
+
+function string2maze(x){
+  var mazerows = x.split("/")
+  let mazedim = mazerows.length
+  switch (mazedim) {
+    case 10:
+      $('#smallboy').click()
+      break;
+    case 15:
+    $('#mediumboy').click();
+    break;
+    case 20:
+    $('#bigboy').click();
+    break;
+    default:
+    return;
+
+  }
+  for (i=0;i<mazedim;i++){
+    var targetrow = i
+    var curcol = 0
+    var rowparts = mazerows[i].split('p')
+    for (j=0;j<rowparts.length;j++){
+      var segment = rowparts[j]
+      var segmentparts = segment.split('*')
+      var seglength = segmentparts[0]
+      var segtype = segmentparts[1]
+      switch (segtype) {
+        case 'b':
+        partsetter = 'space'
+
+
+          break;
+        case 'w':
+        partsetter = 'wall'
+        break;
+
+        case 'g':
+        partsetter = 'gate'
+        break;
+
+        case 'k':
+        partsetter = 'key'
+        break;
+
+        case 's':
+        partsetter = 'start'
+        break;
+
+        case 'e':
+        partsetter = 'end'
+        break;
+        default:
+        return;
+
+      }
+      for (k=0;k<seglength;k++){
+        $('#r'+i.toString()+'c'+curcol.toString()).val(partsetter)
+        $('#r'+i.toString()+'c'+curcol.toString()).html($('#'+partsetter).html())
+        $('#r'+i.toString()+'c'+curcol.toString()).css('background','white')
+        if (partsetter == 'wall'){
+          $('#r'+i.toString()+'c'+curcol.toString()).css('background','black')
+
+        }
+        curcol++
+
+      }
+    }
+
+
+
+  }
+
+}
+
+var samplestring = ('1*sp5*bp4*w/10*b/10*w/10*b/10*b/10*b/10*b/10*b/10*b/9*bp1*e')
