@@ -3,7 +3,7 @@ var fullboard = []
 
 var key_string = '<img src="key.png" alt="" width="66%">'
 var gate_string = '<img src="gate.png" alt="" width="66%">'
-var opengate_string = '<img src="opengate.png" alt="" width="66%">'
+var opengate_string = '<img src="opengate.png" alt="" width="66%" height="66%">'
 
 $('#key').html(key_string)
 
@@ -164,7 +164,7 @@ function updatecolors(stepnum,keystat){
       }
       z = fullboard[i][j]
 
-      //this scaling factor seems to work okay. Might fiddle with it later
+
       var shade = 255*(1-z.val[keystat]/worstval[keystat]).toString()
       z.jquerid.css('background','rgb(255,'+shade+','+shade+')')
     }
@@ -380,7 +380,7 @@ var robot = {
 
     this.runsteps++
 
-  
+
 
     //update valuation of  square to 1 less than best neighbor
     //(which is it's next square).
@@ -443,6 +443,7 @@ $('#stopbutton').on('click', function(){
   makeboard();
   $('#progresstracker').html('')
   robot.trialnum = 0
+  robot.runhistory = []
   worstval = [0,0]
 
 })
@@ -480,6 +481,8 @@ $('.sizeboy').on('click',function(){
   fullboard = []
   makebuttons();
 })
+
+$('#wall').click();
 
 //function for converting a string to a maze.
 //good for saving/generating mazes quickly.
