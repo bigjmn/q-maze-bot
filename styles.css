@@ -58,11 +58,11 @@
 #controlpanel{
   position: absolute;
   top:620px;
-  width: 320px;
+  width: 430px;
   height: 120px;
   background-color: tan;
   align-items: center;
-  padding: 20px;
+  padding: 10px;
   text-align: center;
 
 

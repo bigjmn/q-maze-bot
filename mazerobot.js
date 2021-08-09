@@ -1,3 +1,4 @@
+
 var msize = 15;
 var fullboard = []
 
@@ -329,7 +330,8 @@ var robot = {
     }
 
     //put the bot back at the starting pos, initiate greed loop
-    $('#mazebot').animate({left:(600/msize)*starter.pos[0].toString()+'px',top:(600/msize)*starter.pos[1].toString()+'px'},10,robot.greedyrun())
+    robot.greedyrun();
+    return;
 
   },
 
@@ -340,6 +342,7 @@ var robot = {
 
   greedyrun: function(){
 
+
     if (this.paused){
       return;
     }
@@ -347,13 +350,16 @@ var robot = {
 
 //if the bot is at the end, start the next run
     if (this.pos.stat == 'end'){
+
+
+
       this.runhistory.push(this.runsteps)
       this.runsteps = 0
       let plotter = document.getElementById('progresstracker');
       	Plotly.newPlot( plotter,[ {y:this.runhistory }],
       	{margin: { t: 0 } } );
 
-        this.startrun()
+        $('#mazebot').animate({left:(600/msize)*starter.pos[0].toString()+'px',top:(600/msize)*starter.pos[1].toString()+'px'},10,this.startrun())
         return;
     }
 
@@ -420,14 +426,19 @@ $('#startbutton').on('click', function(){
   }
   robot.paused = false;
 
-  $('#mazebot').show();
+
 
   makeboard()
 
   $('#clearbutton').prop('disabled',true)
+  $('#wallfill').prop('disabled',true)
+  $('#randboard').prop('disabled',true)
+
 
 
   robot.startrun()
+  $('#mazebot').show();
+
 
 })
 
@@ -437,6 +448,8 @@ $('#stopbutton').on('click', function(){
   $('#mazebot').hide();
 
   $('#clearbutton').prop('disabled',false)
+  $('#wallfill').prop('disabled',false)
+  $('#randboard').prop('disabled',false)
 
 
   //clears the values
@@ -449,6 +462,9 @@ $('#stopbutton').on('click', function(){
 })
 
 $('#clearbutton').on('click', function(){
+  starter = null;
+  gatespot = null;
+  keyspot = null;
   $('.mazepart').val('space')
 
 
@@ -474,6 +490,7 @@ $('#wallfill').on('click', function(){
 
 
 $('.sizeboy').on('click',function(){
+  $('#stopbutton').click();
   $('.sizeboy').css('border-style','none')
   $(this).css('border-style','solid')
   $('#gamezone').html('')
@@ -487,9 +504,9 @@ $('#wall').click();
 //function for converting a string to a maze.
 //good for saving/generating mazes quickly.
 
-function string2maze(x){
-  var mazerows = x.split("/")
-  let mazedim = mazerows.length
+function loadmaze(x){
+
+  let mazedim = x.length
   switch (mazedim) {
     case 10:
       $('#smallboy').click()
@@ -505,60 +522,371 @@ function string2maze(x){
 
   }
   for (i=0;i<mazedim;i++){
-    var targetrow = i
-    var curcol = 0
-    var rowparts = mazerows[i].split('p')
-    for (j=0;j<rowparts.length;j++){
-      var segment = rowparts[j]
-      var segmentparts = segment.split('*')
-      var seglength = segmentparts[0]
-      var segtype = segmentparts[1]
-      switch (segtype) {
+    for (j=0;j<mazedim;j++){
+      var targetsquare = $('#r'+i.toString()+'c'+j.toString())
+      var valtofill;
+      var valcode = x[i][j]
+      switch (valcode) {
         case 'b':
-        partsetter = 'space'
+        valtofill = 'space'
+        break;
 
-
-          break;
         case 'w':
-        partsetter = 'wall'
-        break;
-
-        case 'g':
-        partsetter = 'gate'
-        break;
-
-        case 'k':
-        partsetter = 'key'
-        break;
-
-        case 's':
-        partsetter = 'start'
+        valtofill = 'wall'
         break;
 
         case 'e':
-        partsetter = 'end'
+        valtofill = 'end'
         break;
+
+        case 's':
+        valtofill = 'start'
+        break;
+
+        case 'g':
+        valtofill = 'gate'
+        break;
+
+        case 'k':
+        valtofill = 'key'
+        break;
+
         default:
         return;
 
+
+
       }
-      for (k=0;k<seglength;k++){
-        $('#r'+i.toString()+'c'+curcol.toString()).val(partsetter)
-        $('#r'+i.toString()+'c'+curcol.toString()).html($('#'+partsetter).html())
-        $('#r'+i.toString()+'c'+curcol.toString()).css('background','white')
-        if (partsetter == 'wall'){
-          $('#r'+i.toString()+'c'+curcol.toString()).css('background','black')
-
-        }
-        curcol++
-
+      targetsquare.val(valtofill)
+      targetsquare.html($('#'+valtofill).html())
+      targetsquare.css('background','white')
+      if (valtofill == 'wall'){
+        targetsquare.css('background','black')
       }
     }
-
 
 
   }
 
 }
 
-var samplestring = ('1*sp5*bp4*w/10*b/10*w/10*b/10*b/10*b/10*b/10*b/10*b/9*bp1*e')
+
+
+
+function partabbrev(x){
+  switch (x) {
+    case 'space':
+    return 'b'
+
+    case 'wall':
+    return 'w'
+
+    case 'start':
+    return 's'
+
+    case 'key':
+    return 'k'
+
+    case 'gate':
+    return 'g'
+
+    case 'end':
+    return 'e'
+
+    default:
+    return;
+
+
+  }
+}
+
+function getbuttonvals(){
+  var buttonvals = []
+
+  for (j=0;j<msize;j++){
+    var rowval = ""
+    for (k=0;k<msize;k++){
+      var butval = $('#r'+j.toString()+'c'+k.toString()).val()
+      rowval+=partabbrev(butval)
+    }
+    buttonvals.push(rowval)
+  }
+  return buttonvals
+}
+
+
+
+
+//BATCH OF SAMPLE MAZES. Should definitely move to an external file.
+var smallmazes = [
+
+["sbbbbbwbwe",
+"wwwbwbwbbb",
+"bbbbwwwwbw",
+"bwwwwbbwbb",
+"bbwbwbwwwb",
+"bwwbbbbbbb",
+"bbwbwwwbwb",
+"bbwbbbbbww",
+"bbbbbwwbwb",
+"bwwbbbbbbb"],
+
+["sbbbwbbbbb",
+"wwwbwbwwww",
+"bbbbwbbbbw",
+"bwwbwbwbwb",
+"bwbbbbwbgb",
+"bwwwbwwbwb",
+"bwbbbbbwbb",
+"bbbwbwwwwb",
+"bwbwbbbwbb",
+"bkbwbbwebb"],
+
+["bbbbewbwbb",
+"bwwwwwbbbw",
+"bbbbbwbbww",
+"bwwbwwwbbw",
+"bbbbwbwbbb",
+"wbwbwbwbws",
+"wbwbbbbbww",
+"wbwwwbwwwb",
+"wbbbbbbbbb",
+"bbbwwwwwbb"],
+
+["swbwbbbwbb",
+"bwbwbwwwbw",
+"bbbwbbwbbw",
+"bwbbbwwwbb",
+"bwbwbbgbbw",
+"bbbwbwwwbb",
+"wwbwwwbbbw",
+"bbbbbwewbw",
+"bwwwbwwwbb",
+"bbwkbbbwbb"]
+
+]
+
+
+var medmazes = [
+["sbbbbbbwwwbbwbb",
+"wwwwbwbbbbbbwwb",
+"bbbwbwbwbbbbwbb",
+"bwbwbwbwbwwwwbb",
+"bwbwbbbwbbbwbbb",
+"bwbwbwwwwwbwbwb",
+ "bbbbbbbbbbbbbwb",
+"bwbwwwwbwbwbbbb",
+"bwbbbbbbwbwwwbb",
+"bbbwbbwbwbbbbbb",
+"wbwwwbwbwbbwwbb",
+"wbbbbbwbwbwwbbb",
+"wwwbwbwbwbbwbww",
+"wewbbbbbbbbwbbw",
+"bbbbwwwwwwbwbbb"],
+
+["sbbbwbwbwbbbbbb",
+"wwwbwbwbwbwwwkw",
+"bwbbbbwbwbwbwww",
+"bwbbwbwbbbwbwew",
+"bwbbwbbbwwwbbbb",
+"bbbbbbbwwbwbwwb",
+"bbbbbwwwbbwbbwb",
+"bbwbbwbbwbwbwwb",
+"bbwwbwbwwbwbwbb",
+"bwwbbwbwbbbbbbw",
+"bwbbbbbwwwbwbbb",
+"bwbwwwwwbwbwwwb",
+"bwbbbbbbbwbwbbb",
+"bwwwwwbbbgbwbwb",
+"bbbbbbbwwwbbbbb"],
+
+["sbbbwbbbbbwbbbb",
+"bwbwwwbbbwwbwwb",
+"bbbbbbwbbbbbbbb",
+"bwwwbwwwbwbwwwb",
+"bwbwbbbbbwbbbbb",
+"bbbwbbwbbwbwwbb",
+"bbbbbbwbbbbbbbb",
+"bwbwwbwwbbwbbwb",
+"bwwwbbbbbbwbbwb",
+"bbbwwbbwwbbbbbb",
+"bbbbbbbbbbbwbwb",
+"bwbwbwwbwwbwbwb",
+"bwwwbbbbbbbwbbb",
+"bbbwbwbwwwwwwbb",
+"bwbbbbbbwwebbbb"],
+
+["bbbbbbbbbbbbbbb",
+"wwbwwbbbbbwwbww",
+"bbbbwbwbwbwbbbb",
+"bbwbbbwbwbbbwbb",
+"bbwwwbwkwbwwwbb",
+"bwwbbbwwwbbbwwb",
+"bwwwbbbbbbbwwwb",
+"wwewbwbsbwbwbwb",
+"bbbwbbbbbbbwbbb",
+"bwbwwwwwwwwwbwb",
+"wwbbbwbwbwbbbww",
+"bwbbbbbbbwwbbwb",
+"bbbwwwwgwwwwbbb",
+"bbbbwbbbbbbbbbb",
+"bwwwwbbwbbwwwwb"],
+
+["sbbbbbwbbwbbbbb",
+"bwbbbwbbbbwbbwb",
+"bbwbwbwbwbbbbbb",
+"bwbbbbbbbwbwbwb",
+"bbwbbwbwbbwbbbw",
+"bwbbwbbbwbbbbwb",
+"bbwbbwbwbbwbbbb",
+"bwbbwbbbwbbwbwb",
+"bbwbbwbwbbwbbbb",
+"bwbbwbbbwbbwbwb",
+"bbwbbwbwbbwbbbw",
+"bwbwbbbbbbbwbwb",
+"bbbbwbwbwbwbbbb",
+"bbwbbwewbwbbwbb",
+"bwbbwbbbbbbwbbb"],
+
+["sbbbbbbwbbbwbwb",
+"wwbwwwbwwbbwbbb",
+"bbbbbwbbbbwwwbb",
+"bwwwbwbbbbbbbbb",
+"bbbbbwwwwbwbwwb",
+"bwwbbwbbwbwwwbb",
+"bbwbbbbbwbwbbbw",
+"bwwbbwbbwwwbwbw",
+"bbwwwwwbwbwwwbw",
+"bbbwbwbwwbbwbbw",
+"bbbwbbbbbbbbbww",
+"bbwwbbwbbwwbbbw",
+"bbwbbwwwbbwwwbb",
+"bbbbbbbwwwwbbbb",
+"bwwwbwbbwebbwwb"]
+
+]
+
+var bigmazes = [
+
+["sbbbwwwwwwwwwwwwwwww",
+"wwbwwwwwwwwbbbbbbbww",
+"wwbwwbbbbbbbbwwwwbww",
+"wbbbbbwwwwbwwwwwwbww",
+"wwbwbwwwwwbwwbwwbbbw",
+"wbbbbbbbwwwwwbwwwwbw",
+"bbwwwwwbwwbbbbbwwwbw",
+"bwwwwwwbwwbwwbwwwwbw",
+"bwwbbbbbbbbwwbwwwbbw",
+"bbwbwwwwwbwwwbwwwbww",
+"wbwbbbbwwbwwbbwbbbww",
+"wbwbwwbbbbbwbwwwwbww",
+"wbbbwwbwwwbwbwwwwbbw",
+"wwwwwbbbbbbbbbbbwbww",
+"wwwwwwbwwwwwbwwbbbww",
+"wbbbbbbwwwwwbwwwwwww",
+"wwwwwbbbwebbbbbbbwww",
+"wbbbbbwbwwwwbwbwwwww",
+"wwwwwwwbbbbwwwbbbbbw",
+"wwwwwwwwwwwwwwwwwwww"],
+
+["wwwbbbbbbbbbswwwwwww",
+"wbbbbbwwwbwwwwwwbwbe",
+"wbwwwwwbbbwwwwwwbwbw",
+"wbbbbbwwwwwwwbbbbbbw",
+"wbwwwbbbbbwbbbwwbwww",
+"wbbwwbwbwwwwwbwwbwww",
+"wwbwwbwbwwwwwbwwbbbb",
+"wwbbwbbbbbbgbbwwwwww",
+"wwbwwwwwwbwbwwwwwwww",
+"wwbwwwwbbbwbbbbbbbbw",
+"wbbbbbbbwwwwwwwwwwbw",
+"wwbwwbwwwwwbbbbwwbbb",
+"wwwwwbwwwwwbwwwwwwbw",
+"wwbbbbwbbbbbwwbbbwbw",
+"wwbwwbwbwwwbbbbwbwww",
+"wwbwwbwbwwwwwbwwbwww",
+"wwbwwbbbbbbwwkwbbwww",
+"bbbbwwwwwwwwwwwwwwww",
+"bwwbbbbbbbwwwwwbbbbw",
+"bwwwwwwwwbbbbbbbwwww"],
+
+["bbbwwwwbbwwwwwwbbbbb",
+"bbbbwbbbbbbbsbbbbwwb",
+"bwwwwwwbbwwwwwwwbbbb",
+"bbbbbbbbbbbbbbbbbbbb",
+"bwwwwwwwwwwwwwwwwwwb",
+"bwbbbbbbbbbbbbbbbbbb",
+"bwbwwwwwwwwwwwwbwwwb",
+"bwbwbbbbbbbbbbbbbbbb",
+"bwbwbwwwwwwbbwwwwwbb",
+"bwbwbwbbbewwbbbbbwbb",
+"bwbwbwbwbbwbbbwbbwbb",
+"bwbwbwbwbbwbbwwbbbwb",
+"bwbwbwbwbbbwbwbwbbww",
+"bwbwbwbwbwbwwwbwbwbb",
+"bwbwbwbbbwbbbbbwbwbb",
+"bwbwbbbbbwwwbwwwbwwb",
+"bwbwbbbbwwwwbbbbbwwb",
+"bbbwbwbbbbbbbwwwwwbb",
+"bbbbbwbwwwwbbbbbbbbb",
+"bbbwbwbbbbbbwwwwbbbb"],
+
+["bbbbwbbbbbbbbswbbbbb",
+"bbwwwwwwbwbwwwwwwwwb",
+"bwbbbbbbbwbbbbbbbbbb",
+"bwbwwwbwwwwwwwbwwwww",
+"bwbbbbbbbwbbbbgbbwbb",
+"bbbwbbbbwwwwwwwwbwbb",
+"bbwbbwbbwbbbbbbbbwbb",
+"bbbbwwwbwbbwbwbwbwbb",
+"bbwbwbwbwbbwbwbwbwbb",
+"wbwbwbwbwbbwbwbwbwbb",
+"wbwbwbbbwbbwbwbwbbbb",
+"wbwbbbbbwbbwbwbwbwbb",
+"wbwbwwwwwwbwbwbbbwbb",
+"bbwbbbbbbwwwwwbwbwbb",
+"wbwbbbwwwbbkwbbwbwwb",
+"wbwbbwwwwbbwwwbwbwwe",
+"bbwwwbbbbbbwbbbwbwwb",
+"bbbbbbbwbbbwbwwwwwbb",
+"wwwwwwbwwwbwbbbbbbbb",
+"bbbbbbbbbbbwwwwwwbbb"]
+
+]
+
+function get_randmaze(){
+  var sizeofrand;
+  switch (msize) {
+    case '10':
+      sizeofrand = smallmazes
+      break;
+
+      case '15':
+      sizeofrand = medmazes
+      break;
+
+      case '20':
+      sizeofrand = bigmazes
+      break;
+
+    default:
+    sizeofrand = medmazes
+    console.log(msize)
+    break;
+
+  }
+
+  var randmaze = sizeofrand[Math.floor(Math.random()*sizeofrand.length)]
+  loadmaze(randmaze)
+}
+
+loadmaze(medmazes[5]);
+
+$('#randboard').on('click', function(){
+  $('#stopbutton').click();
+
+
+  get_randmaze();
+
+
+})

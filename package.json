@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "FileReader": "^0.10.2",
     "plotly.js-dist": "^2.3.1"
   }
 }
