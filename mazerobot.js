@@ -1,5 +1,6 @@
 
 var msize = 15;
+
 var fullboard = []
 
 var key_string = '<img src="key.png" alt="" width="66%">'
@@ -14,7 +15,17 @@ $('#key').html(key_string)
 
 $('#gate').html(gate_string)
 
+var keybutton = null;
+var gatebutton = null;
+var startbutton = null;
+var endbutton = null;
 
+function resetbuts(){
+  keybutton = null;
+  gatebutton = null;
+  endbutton = null;
+  startbutton = null;
+}
 
 
 var flag=false;
@@ -53,6 +64,19 @@ for (i=0;i<msize;i++){
         return;
       }
       flag = true;
+
+      if (this.value == 'gate'){
+        gatebutton = null;
+      }
+      if (this.value == 'start'){
+        startbutton = null;
+      }
+      if (this.value == 'end'){
+        endbutton = null;
+      }
+      if (this.value == 'key'){
+        keybutton = null;
+      }
       this.value = partsetter
       this.innerHTML = partimage
 
@@ -61,7 +85,55 @@ for (i=0;i<msize;i++){
         return;
       }
       if (this.value == 'gate'){
-        $(this).css('background','blue')
+        if (gatebutton){
+
+          gatebutton.val('space')
+          gatebutton.html('')
+
+
+        }
+        gatebutton = $('#'+this.id)
+
+
+      }
+
+      if (this.value == 'end'){
+        if (endbutton){
+
+          endbutton.val('space')
+          endbutton.html('')
+
+
+        }
+        endbutton = $('#'+this.id)
+
+
+      }
+
+      if (this.value == 'start'){
+        if (startbutton){
+
+          startbutton.val('space')
+          startbutton.html('')
+
+
+        }
+        startbutton = $('#'+this.id)
+
+
+      }
+
+      if (this.value == 'key'){
+        if (keybutton){
+
+          keybutton.val('space')
+          keybutton.html('')
+
+
+        }
+        keybutton = $('#'+this.id)
+
+
       }
       $(this).css('background','white')
     })
@@ -168,6 +240,13 @@ function updatecolors(stepnum,keystat){
 
       var shade = 255*(1-z.val[keystat]/worstval[keystat]).toString()
       z.jquerid.css('background','rgb(255,'+shade+','+shade+')')
+
+      if (z.stat == 'space'){
+        z.jquerid.html('')
+        if ($('#showvals').is(':checked')){
+          z.jquerid.html(z.val[keystat])
+        }
+      }
     }
   }
 }
@@ -421,6 +500,10 @@ $('#speedslider').on('input',function(){
 //add listener to start button to trigger this whole thing.
 
 $('#startbutton').on('click', function(){
+  if (!startbutton || !endbutton){
+    console.log('invalid maze')
+    return;
+  }
   if (!runmode){
     runmode = true;
   }
@@ -462,6 +545,7 @@ $('#stopbutton').on('click', function(){
 })
 
 $('#clearbutton').on('click', function(){
+  resetbuts();
   starter = null;
   gatespot = null;
   keyspot = null;
@@ -476,6 +560,7 @@ $('#clearbutton').on('click', function(){
 })
 
 $('#wallfill').on('click', function(){
+  resetbuts();
   $('.mazepart').val('wall')
 
 
@@ -521,6 +606,8 @@ function loadmaze(x){
     return;
 
   }
+resetbuts();
+
   for (i=0;i<mazedim;i++){
     for (j=0;j<mazedim;j++){
       var targetsquare = $('#r'+i.toString()+'c'+j.toString())
@@ -537,18 +624,22 @@ function loadmaze(x){
 
         case 'e':
         valtofill = 'end'
+        endbutton = targetsquare
         break;
 
         case 's':
         valtofill = 'start'
+        startbutton = targetsquare
         break;
 
         case 'g':
         valtofill = 'gate'
+        gatebutton = targetsquare
         break;
 
         case 'k':
         valtofill = 'key'
+        keybutton = targetsquare
         break;
 
         default:
