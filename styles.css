@@ -35,7 +35,7 @@
 #mazepanel{
   position: absolute;
   width:60px;
-  top:20px;
+  top:10px;
   left: 620px;
 }
 #sizepanel{
@@ -49,6 +49,7 @@
   width: 500px;
   height: 400px;
   left: 700px;
+  top: 10px;
   border-style: solid;
   border-width: 1px;
   overflow-y:auto;
@@ -60,7 +61,7 @@
   left:620px;
   top:480px;
   width: 530px;
-  height: 120px;
+  height: 105px;
   background-color: tan;
   align-items: center;
   padding: 10px;
